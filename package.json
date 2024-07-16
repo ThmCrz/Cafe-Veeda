@@ -1,0 +1,13 @@
+{
+  "name": "cafe-veeda-website",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd frontEnd && npm install && npm run build && cd ../BackEnd && npm install",
+    "start" : "cd BackEnd && npm run app",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
