@@ -198,19 +198,19 @@ const ManageOrder = (props) => {
                             <div className="flex flex-row uppercase lg:text-lg">
                               <p className="flex-[2_2_0%]">Subtotal</p>
                               <p className="flex-1 lg:flex-none text-right">
-                                PHP {n_f(item.grand_total - 30000)}
+                                PHP {n_f(item.grand_total- 60) - n_f(item.grand_total- 60) * 0.15}
                               </p>
                             </div>
                             <div className="flex flex-row uppercase lg:text-lg">
                               <p className="flex-[2_2_0%]">Tax & Fees</p>
                               <p className="flex-1 lg:flex-none text-right">
-                                PHP 20.000
+                              PHP {n_f(item.grand_total- 60) * 0.15}
                               </p>
                             </div>
                             <div className="flex flex-row uppercase lg:text-lg">
                               <p className="flex-[2_2_0%]">Shipping</p>
                               <p className="flex-1 lg:flex-none text-right">
-                                PHP 10.000
+                              PHP 60
                               </p>
                             </div>
                             <div className="flex flex-row uppercase  lg:text-xl font-bold my-10">
@@ -241,14 +241,14 @@ const ManageOrder = (props) => {
                     <p>
                       <b>Delivery</b> to{" "}
                       {order[focusedCard]?.delivery_address ||
-                        "Jln. Garuda 536"}
+                        "AMA IT Office"}
                     </p>
                   </div>
                   <hr />
 
                   <p>{order[focusedCard]?.notes || "no notes"}</p>
                   <hr />
-                  <p>{order[focusedCard]?.phone_number || "0896726232"}</p>
+                  <p>{order[focusedCard]?.phone_number || "No number Provided"}</p>
                 </section>
                 {/* <section className="text-white text-xl lg:text-2xl font-extrabold drop-shadow-lg text-center md:text-left relative">
                 Payment method

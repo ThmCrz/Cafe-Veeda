@@ -20,8 +20,8 @@ export function register(email, password, phone_number, controller) {
   });
 }
 
-export function forgotPass(email, controller) {
-  const body = { email };
+export function forgotPass(email, newPassword , controller) {
+  const body = { email, newPassword };
   const url = `${host}apiv1/auth/forgotPass`;
 
   return axios.post(url, body, {
@@ -59,8 +59,8 @@ export function logoutUser(token) {
   return axios.delete(url, config);
 }
 
-export async function sendAuthCode(email, authCodeRef, controller) {
-  const body = { email, authCodeRef };
+export async function sendAuthCode(email, authCodeRef, Mode, controller) {
+  const body = { email, authCodeRef, Mode };
   const url = `${host}apiv1/auth/sendAuthCode`;
 
   try {

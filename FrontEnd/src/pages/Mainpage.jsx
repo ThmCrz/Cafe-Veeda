@@ -149,26 +149,26 @@ class Mainpage extends Component {
                   key={idx}
                 >
                   <img
-                    src={kape1}
+                    src="https://res.cloudinary.com/dlcgcihjj/image/upload/v1721464807/jokopi/product-image-d2c4f.webp"
                     alt=""
                     width="140px"
                     className="rounded-full mb-7"
                   />
-                  <h3 className="text-lg font-medium">Signature Coffee</h3>
+                  <h3 className="text-lg font-medium">Strawberry Milk</h3>
                   <ul className="flex flex-col gap-5 mb-8 md:mb-20">
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Signature Syrup
+                      <img src={checkIcon} alt="" /> Strawberry Milk
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Signature Whipped Cream
+                      <img src={checkIcon} alt="" /> Strawberry Chunks
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Ice / Hot
+                      <img src={checkIcon} alt="" /> Iced
                     </li>
                   </ul>
-                  <p className="font-medium text-2xl">PHP 49/59</p>
+                  <p className="font-medium text-2xl">PHP 49/59/69</p>
                   <button className="bg-secondary text-tertiary px-9 py-3 rounded-3xl font-bold">
-                    Order Now
+                    <Link to="/products/detail/7">Order Now</Link>
                   </button>
                 </div>
               ))}{Array("").map((item, idx) => (
@@ -177,26 +177,27 @@ class Mainpage extends Component {
                   key={idx}
                 >
                   <img
-                    src={kape2}
+                    src="https://res.cloudinary.com/dlcgcihjj/image/upload/v1721840986/jokopi/product-image-9780f.webp"
                     alt=""
                     width="140px"
                     className="rounded-full mb-7"
                   />
-                  <h3 className="text-lg font-medium">Salted Caramel</h3>
+                  <h3 className="text-lg font-medium">Cafe Veeda Signature Coffee</h3>
                   <ul className="flex flex-col gap-5 mb-8 md:mb-20">
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Caramel Syrup
+                      <img src={checkIcon} alt="" /> Signature Coffee Beans
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Salted Caramel Drizzle
+                      <img src={checkIcon} alt="" /> Signature Milk
                     </li>
+                    
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Ice / Hot
+                      <img src={checkIcon} alt="" /> Iced
                     </li>
                   </ul>
-                  <p className="font-medium text-2xl">PHP 49/59</p>
+                  <p className="font-medium text-2xl">PHP 49/59/69</p>
                   <button className="bg-secondary text-tertiary px-9 py-3 rounded-3xl font-bold">
-                    Order Now
+                    <Link to="/products/detail/16">Order Now</Link>
                   </button>
                 </div>
               ))}{Array("").map((item, idx) => (
@@ -205,26 +206,26 @@ class Mainpage extends Component {
                   key={idx}
                 >
                   <img
-                    src={kape3}
+                    src="https://res.cloudinary.com/dlcgcihjj/image/upload/v1721841006/jokopi/product-image-15e82.webp"
                     alt=""
                     width="140px"
                     className="rounded-full mb-7"
                   />
-                  <h3 className="text-lg font-medium">Hazelnut Latte</h3>
+                  <h3 className="text-lg font-medium">Chocolate Latte</h3>
                   <ul className="flex flex-col gap-5 mb-8 md:mb-20">
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Hazelnut Syrup
+                      <img src={checkIcon} alt="" /> Chocolate
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Vanilla Whipped Cream
+                      <img src={checkIcon} alt="" /> Signature Cofee
                     </li>
                     <li className="flex items-center gap-4">
-                      <img src={checkIcon} alt="" /> Ice / Hot
+                      <img src={checkIcon} alt="" /> Iced
                     </li>
                   </ul>
-                  <p className="font-medium text-2xl">PHP 49/59</p>
+                  <p className="font-medium text-2xl">PHP 49/59/69</p>
                   <button className="bg-secondary text-tertiary px-9 py-3 rounded-3xl font-bold">
-                    Order Now
+                    <Link to="/products/detail/17">Order Now</Link>
                   </button>
                 </div>
               ))}
@@ -325,24 +326,7 @@ class Mainpage extends Component {
               })}
             </div>
           </section>
-          <section className="global-px z-10 relative w-full mb-6 md:mb-[-6rem]">
-            <div className="shadow-primary rounded-xl flex flex-col md:flex-row py-10 md:py-14 px-8 md:px-16 bg-white text-center md:text-left">
-              <aside className="flex-1 space-y-4 mb-5 md:mb-0">
-                <p className="text-3xl font-semibold">Check our promo today!</p>
-                <p className="text-primary">
-                  Let&apos;s see the deals and pick yours
-                </p>
-              </aside>
-              <aside className="hidden lg:block lg:flex-1"></aside>
-              <aside className="flex-1 flex flex-col justify-center">
-                <Link to="/products">
-                <button className="ml-auto w-[100%] md:w-[75%]  bg-secondary rounded-xl py-4 text-tertiary font-bold">
-                  See promo
-                </button>
-                </Link>
-              </aside>
-            </div>
-          </section>
+
         </main>
         <Footer />
       </Fragment>

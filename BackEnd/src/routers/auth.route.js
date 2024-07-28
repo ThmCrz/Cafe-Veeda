@@ -10,7 +10,7 @@ authRouter.post("/register", authController.register); // register
 authRouter.delete("/logout", authController.logout); // logout
 authRouter.patch("/editPassword", auth.check, authController.updatePassword); // change password
 
-authRouter.post("/forgotPass", authController.requestResetPass); // change password
+authRouter.post("/forgotPass", authController.forgotPasswordReset); // change password
 authRouter.get("/resetPass", authController.getDataResetPass);
 authRouter.patch("/resetPass", authController.resetPassword); // change password
 

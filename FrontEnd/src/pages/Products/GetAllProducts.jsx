@@ -38,7 +38,7 @@ function GetAllProducts(props) {
 
       getAllProducts(
         catId,
-        { sort, limit: 8, searchByName, orderBy, page },
+        { sort, limit: 10, searchByName, orderBy, page },
         controller
       )
         .then((response) => response.data)
@@ -135,14 +135,14 @@ function GetAllProducts(props) {
 
     return (
       <>
-        <section className="grid grid-cols-2 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-3 justify-items-center content-around gap-3 gap-y-16 mt-10">
+        <section className="grid grid-cols-2 xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-4 sm:grid-cols-4 justify-items-center content-around gap-2 gap-y-16 mt-10">
           {products.map((product) => (
             <Link to={`/products/detail/${product.id}`} key={product.id}>
-              <section className="relative w-36 bg-white shadow-lg hover:shadow-xl duration-200 p-5 rounded-3xl">
+              <section className="relative w-44 bg-white shadow-lg hover:shadow-xl duration-200 p-5 rounded-3xl">
                 <img
                   src={product.img ?? productPlaceholder}
                   alt=""
-                  className="aspect-square rounded-full object-cover mt-[-50%] w-full mb-3 shadow-lg"
+                  className="aspect-square object-cover mt-[-50%] w-full mb-3 shadow-lg"
                 />
                 {/* <div className="absolute top-0 right-0 bg-white p-2 rounded-3xl font-extrabold text-lg">
                 20%

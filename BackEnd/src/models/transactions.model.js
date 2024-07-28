@@ -72,14 +72,13 @@ function list(id_transaction) {
 
 const createTransaction = (client, body, userId) => {
   return new Promise((resolve, reject) => {
-    const { payment_id, delivery_id, promo_id, notes, address } = body;
+    const { payment_id, delivery_id, notes, address } = body;
     const sql =
-      "INSERT INTO transactions (user_id, payment_id, delivery_id, promo_id, notes, shipping_address) values ($1, $2, $3, $4, $5, $6) RETURNING id";
+      "INSERT INTO transactions (user_id, payment_id, delivery_id, notes, shipping_address) values ($1, $2, $3, $4, $5) RETURNING id";
     const values = [
       userId,
       payment_id,
       delivery_id,
-      promo_id || 0,
       notes,
       address,
     ];
@@ -97,16 +96,12 @@ const createDetailTransaction = (client, body, transactionId) => {
     let values = [];
     for (let i = 0; i < products.length; i++) {
       const { product_id, size_id, qty } = products[i];
-      const resultProduct = await client.query(
-        `SELECT price FROM products WHERE id = $1`,
-        [product_id]
-      );
       const resultSize = await client.query(
         `SELECT price FROM product_size WHERE id = $1`,
         [size_id]
       );
       const subtotal =
-        resultProduct.rows[0].price * resultSize.rows[0].price * qty;
+        resultSize.rows[0].price * qty + 60;
 
       if (values.length) sql += ", ";
       sql += `($${1 + 5 * i}, $${2 + 5 * i}, $${3 + 5 * i}, $${4 + 5 * i}, $${

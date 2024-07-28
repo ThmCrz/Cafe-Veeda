@@ -46,6 +46,7 @@ function Cart() {
     notes: "",
     phone_number: "",
   });
+  
   useDocumentTitle("My Cart");
 
   function onChangeForm(e) {
@@ -179,6 +180,10 @@ function Cart() {
                   {cart.map((list, idx) => {
                     let sizeName;
                     switch (list.size_id) {
+                      case 1:
+                        sizeName = "Regular";
+                        break;
+
                       case 2:
                         sizeName = "Large";
                         break;
@@ -244,8 +249,17 @@ function Cart() {
                         </aside>
                         <aside className="flex-1">
                           <p className="text-right">
-                            PHP {n_f(Number(list.price) * Number(list.qty))}
-                          </p>
+                      PHP{" "}
+                      {n_f(
+                        list.size_id === 1
+                          ? 49 * list.qty
+                          : list.size_id === 2
+                          ? 59 * list.qty
+                          : list.size_id === 3
+                          ? 69 * list.qty
+                          : 49 * list.qty // Default to size_id 1 calculation
+                      )}
+                    </p>
                         </aside>
                         <button
                           onClick={() =>
@@ -268,29 +282,62 @@ function Cart() {
                     <p className="flex-[2_2_0%]">Subtotal</p>
                     <p className="flex-1 lg:flex-none text-right">
                       PHP{" "}
-                      {n_f(
-                        cart.reduce((acc, cur) => acc + cur.price * cur.qty, 0)
-                      )}
+                      {
+                        n_f(
+                          cart.reduce((acc, cur) => {
+                            let priceMultiplier = 0;
+                            switch (cur.size_id) {
+                              case 1:
+                                priceMultiplier = 49;
+                                break;
+                              case 2:
+                                priceMultiplier = 59;
+                                break;
+                              case 3:
+                                priceMultiplier = 69;
+                                break;
+                              default:
+                                priceMultiplier = 0; // Handle other cases if needed
+                            }
+                            return acc + priceMultiplier * cur.qty;
+                          }, 0)
+                        )
+                      }
                     </p>
                   </div>
                   <div className="flex flex-row uppercase lg:text-lg">
                     <p className="flex-[2_2_0%]">Tax & Fees</p>
-                    <p className="flex-1 lg:flex-none text-right">PHP 59</p>
+                    <p className="flex-1 lg:flex-none text-right">PHP 0</p>
                   </div>
                   <div className="flex flex-row uppercase lg:text-lg">
                     <p className="flex-[2_2_0%]">Shipping</p>
-                    <p className="flex-1 lg:flex-none text-right">PHP 59</p>
+                    <p className="flex-1 lg:flex-none text-right">PHP 60</p>
                   </div>
                   <div className="flex flex-row uppercase  lg:text-xl font-bold my-10">
                     <p className="flex-[2_2_0%]">Total</p>
                     <p className="flex-initial lg:flex-none">
                      PHP{" "}
-                      {n_f(
-                        cart.reduce(
-                          (acc, cur) => acc + cur.price * cur.qty,
-                          0
-                        ) + 138
-                      )}
+                     {
+                      n_f(
+                        cart.reduce((acc, cur) => {
+                          let priceMultiplier = 0;
+                          switch (cur.size_id) {
+                            case 1:
+                              priceMultiplier = 49;
+                              break;
+                            case 2:
+                              priceMultiplier = 59;
+                              break;
+                            case 3:
+                              priceMultiplier = 69;
+                              break;
+                            default:
+                              priceMultiplier = 0; // Handle other cases if needed
+                          }
+                          return acc + priceMultiplier * cur.qty;
+                        }, 0) + 60
+                      )
+                    }
                     </p>
                   </div>
                 </section>

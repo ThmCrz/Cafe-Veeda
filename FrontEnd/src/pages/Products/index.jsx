@@ -115,74 +115,7 @@ function Products(props) {
       <Header />
 
       <main className="flex flex-col-reverse md:flex-row global-px">
-        <section className="flex-1 flex flex-col items-center gap-5 py-5 md:border-r-2 border-solid md:pr-6">
-          <h2 className="font-bold text-2xl">Promo Today</h2>
-          <p className="text-center">
-            Coupons will be updated every weeks.
-            <br />
-            Check them out!
-          </p>
-          <div className="flex flex-col justify-center gap-5">
-            {promoLoad ? (
-              <Skeleton
-                height={125}
-                count={4}
-                containerClassName="flex-1 w-[350px] md:w-auto lg:w-[346px]"
-                style={{ marginBottom: "1rem", minWidth: 250 }}
-              />
-            ) : promos.length < 1 ? (
-              <div className="flex flex-col text-center">
-                <img src={illustrationsPromo} width={200} />
-                <p className="text-tertiary font-semibold">No promo today</p>
-                <p className="text-black font-medium text-sm">
-                  Dont worry, check tommorow
-                </p>
-              </div>
-            ) : (
-              promos.map((promo, idx) => (
-                <div
-                  className="flex flex-row items-center bg-slate-300  rounded-xl gap-2 px-4 py-3 relative"
-                  key={idx}
-                >
-                  <div className="flex-1 flex justify-center py-1">
-                    {/* <img src={promo.img || images} alt="" width="75px" /> */}
-                    <div className="avatar">
-                      <div className="w-24 rounded-xl">
-                        <img
-                          src={promo.img || images}
-                          className="mix-blend-multiply contrast-100"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-[2_2_0%]">
-                    <p className="font-bold">{promo.name}</p>
-                    <p className="text-sm">{promo.desc}</p>
-                  </div>
-
-                  {Number(userInfo.role) > 1 && (
-                    <NavLink
-                      to={`/promo/edit/${promo.id}`}
-                      className="bg-tertiary absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-primary-focus"
-                    >
-                      <img src={penIcon} className="w-4 h-4" />
-                    </NavLink>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-          {Number(props.userInfo.role) > 1 && (
-            <div className="mt-auto flex w-full">
-              <button
-                onClick={() => navigate("/promo/new")}
-                className="btn btn-block btn-secondary text-tertiary font-bold normal-case"
-              >
-                Add new promo
-              </button>
-            </div>
-          )}
-        </section>
+        
         <section className="flex-[2_2_0%] flex flex-col md:pl-16 py-5">
           <nav className="list-none flex flex-row md:justify-between justify-evenly flex-wrap gap-5 mb-10 ">
             <li>
@@ -197,7 +130,7 @@ function Products(props) {
                 to="/products"
                 end
               >
-                Favorite & Promo
+                Favorites
               </NavLink>
             </li>
             <li>

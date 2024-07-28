@@ -80,7 +80,7 @@ const Register = () => {
         register(form.email, form.password, form.phoneNumber, controller).then(
           (res) => {
             e.target.disabled = false;
-            setIsLoading(false);
+            setIsLoading(true);
             return res.data.msg;
           }
         ),
@@ -106,11 +106,13 @@ const Register = () => {
 
   function SendEmail(e) {
     toast.dismiss(); // dismiss all toast
+    const Mode = "register";
     const sixDigitCode = Math.floor(100000 + Math.random() * 900000);
     const currentAuthCodeRef = sixDigitCode.toString();
     setAuthCodeRef(currentAuthCodeRef);
+    setGetCodeIsLoading(true);
 
-    sendAuthCode(form.email, currentAuthCodeRef, controller).then((res) => {
+    sendAuthCode(form.email, currentAuthCodeRef, Mode, controller).then((res) => {
       toast.promise(
         Promise.resolve(res.data),
         {
@@ -118,14 +120,17 @@ const Register = () => {
           success: "We sent a code to your email!",
           error: (err) => {
             e.target.disabled = false;
-            setIsLoading(false);
+            setGetCodeIsLoading(false);
             const errorMsg = err.response?.data?.msg || "An unexpected error occurred";
             return errorMsg;
           },
         }
       );
-    });
+      setGetCodeIsLoading(false);
+    }
+  );
   }
+
   function onChangeForm(e) {
     if (e.target.name === 'authCode' && e.target.value.length > 6) {
       return; // Do not update the state if more than 6 characters are entered
@@ -208,11 +213,16 @@ const Register = () => {
 
                 <button
                   type="button"
-                  className="absolute top-5 right-3 bg-primary text-white px-3 py-1 rounded-md"
+                  className="absolute top-5 right-3 bg-primary text-white px-3 py-1 rounded-md flex-row"
                   disabled={getCodeIsLoading}
                   onClick={SendEmail}
                 >
                   Get Code
+                  {getCodeIsLoading ? (
+                  <svg className="getCodeSvg" viewBox="25 25 50 50">
+                  <circle className="getCodeCircle" r="20" cy="50" cx="50"></circle>
+                </svg>  
+                  ):null}
                 </button>
               </div>
               <span className="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 h-4">

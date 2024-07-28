@@ -1,78 +1,164 @@
 import React, { useEffect, useState } from "react";
-
 import { now } from "lodash";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
-
 import icon from "../../assets/images/Cafe Veeda Logo.jpg";
-import { forgotPass } from "../../utils/dataProvider/auth";
+import { sendAuthCode, forgotPass } from "../../utils/dataProvider/auth";
 import useDocumentTitle from "../../utils/documentTitle";
 
 const ForgotPass = () => {
   useDocumentTitle("Forgot Password");
 
   const controller = React.useMemo(() => new AbortController(), []);
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = React.useState("");
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);  
   const [error, setError] = useState("");
   const [resend, setResend] = useState(0);
-  const [time, setTime] = useState(0);
   const [displaycd, setDisplaycd] = useState("");
-
-  function forgotPassHandler(e) {
-    e.preventDefault(); // preventing default submit
-    toast.dismiss(); // dismiss all toast
-
-    setResend(now() + 2 * 60 * 1000); // now + 2 minutes
-    let err = "";
-    if (email.length < 1) {
-      err = "Must input email!";
+  
+  const [resetPassStep, setResetPassStep] = useState(1);
+  
+  const [email, setEmail] = useState("");
+  
+  const [authenticationCode, setAuthenticationCode] = useState("");
+  const [authCodeRef, setAuthCodeRef] = useState("");
+  
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  useEffect(() => {
+    // Check localStorage for resetPassStep
+    const savedStep = parseInt(localStorage.getItem('resetPassStep'), 10);
+    if (savedStep) {
+      setResetPassStep(savedStep);
     }
-    setError(err);
-    if (!isLoading && err.length < 1) {
-      setIsLoading(true);
-      e.target.disabled = true;
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('resetPassStep', resetPassStep);
+  }, [resetPassStep]);
+
+  const handleSendEmail = (e) => {
+    e.preventDefault();
+    toast.dismiss();
+    setIsLoading(true);
+    const sixDigitCode = Math.floor(100000 + Math.random() * 900000);
+    const currentAuthCodeRef = sixDigitCode.toString();
+    setAuthCodeRef(currentAuthCodeRef);
+
+    sendAuthCode(email, currentAuthCodeRef, "forgotPass", controller).then((res) => {
       toast.promise(
-        forgotPass(email, controller).then((res) => {
-          // console.log(res.data.data.token);
-          setResend(now() + 2 * 60 * 1000); // now + 2 minutes
-          e.target.disabled = false;
-          setIsLoading(false);
-          return res.data;
-        }),
+        Promise.resolve(res.data),
         {
           loading: "Please wait a moment",
           success: "We sent a code to your email!",
           error: (err) => {
-            e.target.disabled = false;
             setIsLoading(false);
-            return err.response.data.msg;
+            const errorMsg = err.response?.data?.msg || "An unexpected error occurred";
+            setError(errorMsg);
+            return errorMsg;
           },
         }
       );
-    }
-  }
-
-  function countdownFormat(ms) {
-    const time = new Date(ms).toISOString().substr(14, 5);
-    const timeFormat = time.replace(":", ".");
-    return timeFormat;
-  }
+      setIsLoading(false);
+      setResend(now() + 2 * 60 * 1000);
+      setResetPassStep(2);
+    });
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (resend > 0 && resend > now()) {
-        const newSec = resend - 1000;
-        setResend(newSec);
-        setDisplaycd(countdownFormat(newSec - now()));
+      if (resend > now()) {
+        const newSec = resend - now();
+        setDisplaycd(countdownFormat(newSec));
+      } else {
+        setDisplaycd("");
       }
     }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
-  function handleChange(e) {
-    return setEmail(e.target.value);
-  }
+    return () => clearInterval(interval);
+  }, [resend]);
+
+const handleResendCode = () => {
+    setIsLoading(true);
+    sendAuthCode(email, authCodeRef, "forgotPass", controller).then((res) => {
+      toast.promise(
+        Promise.resolve(res.data),
+        {
+          loading: "Please wait a moment",
+          success: "We resent your authentication code to your email!",
+          error: (err) => {
+            setIsLoading(false);
+            const errorMsg = err.response?.data?.msg || "An unexpected error occurred";
+            setError(errorMsg);
+            return errorMsg;
+          },
+        }
+      );
+    });
+    setIsLoading(false);
+    setResend(now() + 2 * 60 * 1000);
+  };
+
+  const handleCodeSubmit = (e) => {
+    e.preventDefault();
+    handleAuthentication();
+  };
+
+const handleAuthentication = () =>{
+    toast.dismiss();
+    if(authenticationCode === authCodeRef){
+      toast.success("Authentication successful!");
+      setResetPassStep(3);
+    }else if (authenticationCode !== authCodeRef){
+      toast.error("Authentication code is incorrect");
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    toast.dismiss();
+    try {
+      if (newPassword === confirmPassword) {
+        // Disable button and show loading state
+        e.target.disabled = true;
+        setIsLoading(true);
+  
+        // Call forgotPass function and await its result
+        const result = await forgotPass(email, newPassword, controller);
+  
+        // Handle success case
+        toast.promise(
+          Promise.resolve(result), // Assuming result is the response object
+          {
+            loading: "Please wait a moment",
+            success: () => {
+              navigate("/auth/login", { replace: true });
+              return "Password reset successful! You can login now";
+            },
+            error: (err) => {
+              return err.message || "An error occurred";
+            },
+          },
+          { success: { duration: Infinity }, error: { duration: Infinity } }
+        );
+  
+      } else {
+        toast.error("Passwords do not match");
+      }
+    } catch (error) {
+      // Handle any error that occurs during the process
+      setIsLoading(false);
+      e.target.disabled = false;
+      toast.error("An error occurred");
+    }
+  };
+  
+  const countdownFormat = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
 
   return (
     <>
@@ -85,57 +171,155 @@ const ForgotPass = () => {
         </Link>
       </header>
       <section className="mt-16">
-        <form
-          action=""
-          method="post"
-          className="space-y-4 md:space-y-6 relative"
-        >
-          <div className="space-y-5">
-            <h2 className="font-bold text-3xl text-center">
-              Forgot your password?
-            </h2>
-            <p className="text-xl text-center">
-              Don’t worry, we got your back!
-            </p>
-          </div>
-          <div>
-            <input
-              type="text"
-              name="email"
-              id="email"
-              className={
-                `border-gray-400 border-2 rounded-2xl p-3 w-full mt-2` +
-                (error !== "" ? " border-red-500" : "")
-              }
-              placeholder="Enter your email adress to get link"
-              value={email}
-              onChange={handleChange}
-            />
-            <span className="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 h-4">
-              {error !== "" ? error : ""}
-            </span>
-          </div>
-          <button
-            type="submit"
-            className="w-full text-tertiary bg-secondary focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-2xl text-lg p-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 shadow-xl"
-            onClick={forgotPassHandler}
+        {resetPassStep === 1 && (
+          <form
+            onSubmit={handleSendEmail}
+            className="space-y-4 md:space-y-6 relative"
           >
-            Send
-          </button>
-        </form>
-        {resend >= now() ? (
-          <section className="text-center mt-10 space-y-2">
-            <p>Click here if you didn’t receive any link in 2 minutes</p>
-            <p className="font-bold">{displaycd}</p>
+            <div className="space-y-5">
+              <h2 className="font-bold text-3xl text-center">
+                Forgot your password?
+              </h2>
+              <p className="text-xl text-center">
+                Don’t worry, we got your back!
+              </p>
+            </div>
+            <div>
+              <label htmlFor="email">Email:</label>
+              <input
+                type="text"
+                name="email"
+                id="email"
+                className={`border-gray-400 border-2 rounded-2xl p-3 w-full mt-2 ${error !== "" ? "border-red-500" : ""}`}
+                placeholder="Enter your email address to get an Authentication Code"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <span className="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 h-4">
+                {error}
+              </span>
+            </div>
             <button
               type="submit"
-              className="w-full text-white bg-tertiary focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-2xl text-lg p-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 shadow-xl"
+              className="w-full text-tertiary bg-secondary focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-2xl text-lg p-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 shadow-xl"
+              disabled={isLoading}
             >
-              Resend Link
+               {isLoading ? "Sending...":"Send"}
             </button>
-          </section>
-        ) : (
-          ""
+          </form>
+        )}
+
+        {resetPassStep === 2 && (
+          <div>
+            <form
+            onSubmit={handleCodeSubmit}
+            className="space-y-4 md:space-y-6 relative"
+          >
+            <div className="space-y-5">
+              <h2 className="font-bold text-3xl text-center">
+                Forgot your password?
+              </h2>
+              <p className="text-xl text-center">
+                We’ve sent an Authentication code to your email
+              </p>
+            </div>
+            <div>
+              <label htmlFor="authenticationCode">Authentication Code:</label>
+              <input
+                type="number"
+                name="authenticationCode"
+                id="authenticationCode"
+                className={`border-gray-400 border-2 rounded-2xl p-3 w-full mt-2 ${error !== "" ? "border-red-500" : ""}`}
+                placeholder="Enter your Authentication Code"
+                value={authenticationCode}
+                onChange={(e) => setAuthenticationCode(e.target.value)}
+              />
+              <span className="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 h-4">
+                {error}
+              </span>
+            </div>
+            <button
+              type="submit"
+              className="w-full text-tertiary bg-secondary focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-2xl text-lg p-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 shadow-xl"
+              disabled={isLoading}
+            >
+              {isLoading ? "Authenticating..." : "Submit"}
+            </button>
+          </form>
+
+          <section className="text-center mt-10 space-y-2">
+            <p>Click here if you didn’t receive any link in 2 minutes</p>
+            <button
+              type="button"
+              className="w-full text-white bg-tertiary focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-2xl text-lg p-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 shadow-xl"
+              onClick={handleResendCode}
+              disabled={resend >= now()}
+            >
+              Resend Link {displaycd}
+            </button>
+        </section>
+          </div>
+        )}
+
+        {resetPassStep === 3 && (
+          <form
+            onSubmit={handlePasswordSubmit}
+            className="space-y-4 md:space-y-6 relative"
+          >
+            <div className="space-y-5">
+              <h2 className="font-bold text-3xl text-center">
+                Forgot your password?
+              </h2>
+              <p className="text-xl text-center">
+                We’ve found your account, you may now reset your password!
+              </p>
+            </div>
+            <div>
+              <label htmlFor="password1">New Password:</label>
+              <input
+                type="password"
+                name="password1"
+                id="password1"
+                className={`border-gray-400 border-2 rounded-2xl p-3 w-full mt-2 ${error !== "" ? "border-red-500" : ""}`}
+                placeholder="Enter your new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <label htmlFor="password2">Confirm New Password:</label>
+              <input
+                type="password"
+                name="password2"
+                id="password2"
+                className={`border-gray-400 border-2 rounded-2xl p-3 w-full mt-2 ${error !== "" ? "border-red-500" : ""}`}
+                placeholder="Confirm your new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <span className="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1 h-4">
+                {error}
+              </span>
+            </div>
+            <button
+              type="submit"
+              className="w-full text-tertiary bg-secondary focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-2xl text-lg p-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 shadow-xl"
+            >
+              Submit
+            </button>
+          </form>
+        )}
+
+        {resetPassStep === 4 && (
+          <div className="text-center mt-10 space-y-2">
+            <p>
+              We’ve reset your password! You can now log in with your new
+              credentials.
+            </p>
+            <Link to="/auth/login">
+              <button className="w-full text-white bg-tertiary focus:ring-4 focus:outline-none focus:ring-primary-300 font-bold rounded-2xl text-lg p-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 shadow-xl">
+                Log In
+              </button>
+            </Link>
+          </div>
         )}
       </section>
     </>

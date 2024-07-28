@@ -1,12 +1,12 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import sendForgotPass from "../helpers/forgotpass.js";
+// import sendForgotPass from "../helpers/forgotpass.js";
 import notification from "../helpers/notification.js";
 import db from "../helpers/postgre.js";
 import authModel from "../models/auth.model.js";
 import tokenModel from "../models/token.model.js";
-import sendAuthCode from "../helpers/authcode.js"
+import sendAuthCode from "../helpers/authcode.js";
 
 // login controller
 async function login(req, res) {
@@ -148,7 +148,7 @@ async function logout(req, res) {
 async function updatePassword(req, res) {
   const { authInfo, body } = req;
   if (body.oldPassword == undefined || body.newPassword == undefined) {
-    res.status(400).json({ msg: "Field tidak boleh kosong!" });
+    res.status(400).json({ msg: "Field cannot be empty!" });
     return;
   }
   try {
@@ -157,7 +157,7 @@ async function updatePassword(req, res) {
     const isPasswordValid = await bcrypt.compare(body.oldPassword, passFromDb);
     if (!isPasswordValid)
       return res.status(403).json({
-        msg: "Password lama salah!",
+        msg: "Password is not Correct!",
       });
     const hashedPassword = await bcrypt.hash(body.newPassword, 15);
     await authModel.editPassword(authInfo.id, hashedPassword);
@@ -172,39 +172,76 @@ async function updatePassword(req, res) {
   }
 }
 
-async function requestResetPass(req, res) {
-  try {
-    const { email } = req.body;
-    const userData = await authModel.getUserInfo(email);
-    if (userData.rows.length < 1)
-      return res.status(409).json({ msg: "Email not registered" });
-    // const isAlreadyReq = await authModel.checkUserResetPass(
-    //   userData.rows[0].id
-    // );
-    // const now = new Date();
-    // if (isAlreadyReq.rows.length > 0 && isAlreadyReq.rows[0].expired_at > now) {
-    //   return res.status(400).json({
-    //     msg: "Kamu telah generate link reset password, tunggu 10 menit",
-    //   });
-    // }
-    await authModel.deleteReqResetPass(userData.rows[0].id);
-    const result = await authModel.requestResetPass(userData.rows[0].id);
-    const url = `/auth/resetPass/?verify=${result.rows[0].verify}&code=${result.rows[0].code}`;
-    console.log(url);
-    sendForgotPass({
-      to: email,
-      url: `https://jokopi-react.vercel.app/${url}`,
+async function forgotPasswordReset(req, res) {
+  const client = await db.connect();
+  const { email, newPassword } = req.body;
+  const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+
+  if (email == undefined || !email.match(regexEmail))
+    return res.status(422).json({ msg: "Invalid email input" });
+  if (newPassword == undefined || parseInt(newPassword.length) < 7)
+    return res
+      .status(422)
+      .json({ msg: "Password must be atleast have 8 characters" });
+
+      try {
+        const checkEmail = await authModel.checkEmail(email);
+    if (checkEmail.rows[0].count > 0){
+      const hashedPassword = await bcrypt.hash(req.body.newPassword, 15);
+    await authModel.editForgotPassword(email, hashedPassword);
+    res.status(200).json({
+      status: 200,
+      msg: "Password Reset Successful",
     });
-    res.status(201).json({
-      msg: "Link reset password created! Expired in 10 minutes",
-    });
-  } catch (error) {
-    console.log(error);
+    }else{
+      res.status(404).json({
+        msg: "Email not found",
+      });
+    };
+      } catch (err) {
+        await client.query("ROLLBACK");
+    console.log(err);
     res.status(500).json({
       msg: "Internal Server Error",
     });
-  }
+      }finally {
+        client.release();
+      }
 }
+
+// async function requestResetPass(req, res) {
+//   try {
+//     const { email } = req.body;
+//     const userData = await authModel.getUserInfo(email);
+//     if (userData.rows.length < 1)
+//       return res.status(409).json({ msg: "Email not registered" });
+//     // const isAlreadyReq = await authModel.checkUserResetPass(
+//     //   userData.rows[0].id
+//     // );
+//     // const now = new Date();
+//     // if (isAlreadyReq.rows.length > 0 && isAlreadyReq.rows[0].expired_at > now) {
+//     //   return res.status(400).json({
+//     //     msg: "Kamu telah generate link reset password, tunggu 10 menit",
+//     //   });
+//     // }
+//     await authModel.deleteReqResetPass(userData.rows[0].id);
+//     const result = await authModel.requestResetPass(userData.rows[0].id);
+//     const url = `/auth/resetPass/?verify=${result.rows[0].verify}&code=${result.rows[0].code}`;
+//     console.log(url);
+//     sendForgotPass({
+//       to: email,
+//       url: `https://jokopi-react.vercel.app/${url}`,
+//     });
+//     res.status(201).json({
+//       msg: "Link reset password created! Expired in 10 minutes",
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({
+//       msg: "Internal Server Error",
+//     });
+//   }
+// }
 
 async function getDataResetPass(req, res) {
   try {
@@ -274,7 +311,7 @@ async function resetPassword(req, res) {
     res.status(200).json({
       status: 200,
       data: resetPass.rows,
-      msg: "Password reseted succesfully",
+      msg: "Password reset succesful",
     });
   } catch (error) {
     console.log(error);
@@ -333,7 +370,7 @@ async function unlinkFcm(req, res) {
 async function requestAuthCode(req, res) {
   try {
     console.log("Request body:", req.body);
-    await sendAuthCode(req.body.email, req.body.authCodeRef);
+    await sendAuthCode(req.body.email, req.body.authCodeRef, req.body.Mode);
     res.status(201).json({ msg: "Authentication Code Has been sent to your Email Address" });
   } catch (error) {
     console.log(error);
@@ -346,7 +383,8 @@ export default {
   register,
   logout,
   updatePassword,
-  requestResetPass,
+  // requestResetPass,
+  forgotPasswordReset,
   resetPassword,
   getDataResetPass,
   linkFcm,

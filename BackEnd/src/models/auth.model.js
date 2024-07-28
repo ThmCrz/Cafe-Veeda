@@ -77,6 +77,16 @@ function editPassword(userid, newPassword) {
   });
 }
 
+function editForgotPassword(email, newPassword) {
+  return new Promise((resolve, reject) => {
+    const sql = "UPDATE users SET password = $2 WHERE email = $1 RETURNING id, email";
+    db.query(sql, [email, newPassword], (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+}
+
 function requestResetPass(userId) {
   return new Promise((resolve, reject) => {
     const verifyId = crypto.randomBytes(25).toString("hex");
@@ -157,4 +167,5 @@ export default {
   selectUser,
   linkToken,
   unlinkToken,
+  editForgotPassword,
 };

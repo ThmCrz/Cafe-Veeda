@@ -350,7 +350,7 @@ function ProductDetail(props) {
                 </div>
               </div>
               <p className="font-bold text-xl">
-                PHP {p.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+              PHP {form.size === "1" ? "49" : form.size === "2" ? "59" : form.size === "3" ? "69" : "0"}
               </p>
             </div>
             <button
